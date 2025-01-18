@@ -10,6 +10,7 @@ from langchain.agents import AgentType, initialize_agent
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_core.tools import Tool
 
+
 warnings.filterwarnings("ignore")
 
 ## webpage configure 
@@ -28,7 +29,7 @@ groq_api_key=st.sidebar.text_input("Enter the Groq API Key" , type="password")
 os.environ["GROQ_API_KEY"]=groq_api_key
 llm=ChatGroq(
     groq_api_key=groq_api_key,
-    model="llama-3.3-70b-versatile"
+    model="llama-3.2-1b-preview"
 )
 
 ##Serper API Key :
@@ -65,7 +66,7 @@ understandable.
 If any file other than the medical report is given as input then just say wrong file uploaded please upload
 the correct file
 """
-# 8080808405
+
 prompt2="""
 You are a highly knowledgeable and professional doctor specializing in medical diagnostics and patient care.
 Your role is to analyze blood test reports, identify alarming or abnormal parameters, and present the
@@ -86,14 +87,13 @@ the alarming factors in blood report
 prompt3="""
 Name top 5 best doctors along with hospital names in {city}
 based on  other patients reviews, qualifications, experience ho suffered similar symptoms using the 
-context and city : 
+context and city   , 
+Make sure u only recommend the doctors that are relevant to the patients alaraaming symptoms 
+mentioned in the context : 
 {context}
 Suggest the doctors in list format , so that they are easy to read
-If there are no specialized doctors in the {city} then recommend the doctors along the hospitals from
-the city near to {city}
-Make sure u only recommend the doctors that are relevenat to the patients mentioned in the {context}
-Plz mention hospitals
-Make sure the response is personalized for the user.
+Make sure the response is personalized for the user , mention every doctor along with the hospital , 
+Evrything in form of list Be a little descrptive , keep everything neat and tidy 
 """
 
 def call_agent(context , city):
