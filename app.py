@@ -9,7 +9,6 @@ from langchain_groq import ChatGroq
 from langchain.agents import AgentType, initialize_agent
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_core.tools import Tool
-from langchain_openai import OpenAI
 
 warnings.filterwarnings("ignore")
 
