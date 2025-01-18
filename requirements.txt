@@ -1,0 +1,10 @@
+langchain
+google-generativeai
+PyPDF2
+langchain_community
+pypdf
+streamlit
+langchain_groq
+langchain-exa 
+exa_py
+tiktoken
