@@ -14,7 +14,7 @@ from langchain_core.tools import Tool
 warnings.filterwarnings("ignore")
 
 ## webpage configure 
-st.set_page_config(page_title="PathoPro 🩺🔬", page_icon="🔬", layout="wide")
+st.set_page_config(page_title="DocuMed AI 🩺🔬", page_icon="🔬", layout="wide")
 st.title("PathoPro 🩺🔬 — Your AI-Powered Medical Report Analyzer")
 
 ## Sidebar configuration
@@ -144,7 +144,7 @@ st.markdown(
     </style>
     <div class="footer">
         <strong>Copyright © 2025 Mohit Raje</strong>
-        <a href="https://github.com/Mohit-Raje" target="_blank">
+        <a href="https://github.com/Farrel0xx" target="_blank">
             <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub">
         </a>
     </div>
