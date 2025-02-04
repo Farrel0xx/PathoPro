@@ -1,8 +1,8 @@
 import PyPDF2 as pdf
 from langchain_community.document_loaders import PyPDFLoader
-import streamlit as st 
+import streamlit as st
 import google.generativeai as genai
-import os 
+import os
 from langchain_groq import ChatGroq
 import warnings
 from langchain_groq import ChatGroq
@@ -14,142 +14,96 @@ from langchain_core.tools import Tool
 warnings.filterwarnings("ignore")
 
 ## webpage configure 
-st.set_page_config(page_title="PathoPro" , page_icon="🔬")
-st.header("PathoPro 🩺🔬 — Your AI-Powered Medical Report Analyzer")
+st.set_page_config(page_title="PathoPro 🩺🔬", page_icon="🔬", layout="wide")
+st.title("PathoPro 🩺🔬 — Your AI-Powered Medical Report Analyzer")
 
-
-## Gemini Setup
-st.sidebar.title="Enter the google API Key"
-api_key=st.sidebar.text_input("Enter the Gemini API Key" , type="password")
+## Sidebar configuration
+st.sidebar.title("Enter API Keys 🔑")
+api_key = st.sidebar.text_input("Enter the Gemini API Key", type="password")
 genai.configure(api_key=api_key)
-os.environ['GOOGLE_API_KEY']=api_key
+os.environ['GOOGLE_API_KEY'] = api_key
 
-## Llamma model inference
-groq_api_key=st.sidebar.text_input("Enter the Groq API Key" , type="password")
-os.environ["GROQ_API_KEY"]=groq_api_key
-llm=ChatGroq(
-    groq_api_key=groq_api_key,
-    model="llama-3.2-1b-preview"
-)
+groq_api_key = st.sidebar.text_input("Enter the Groq API Key", type="password")
+os.environ["GROQ_API_KEY"] = groq_api_key
+llm = ChatGroq(groq_api_key=groq_api_key, model="llama-3.2-1b-preview")
 
-##Serper API Key :
-serper_api_key=st.sidebar.text_input("Enter the Serper API Key" , type="password")
-os.environ["SERPER_API_KEY"]=serper_api_key
+serper_api_key = st.sidebar.text_input("Enter the Serper API Key", type="password")
+os.environ["SERPER_API_KEY"] = serper_api_key
 
-city = st.sidebar.selectbox(
-    "Select the city" , 
-    ("Mumbai" , "Pune" , "Banglore")
-    )
+city = st.sidebar.selectbox("Select the city", ("Mumbai", "Pune", "Banglore"))
 
-def get_response(content  , prompt):
+# Response function
+def get_response(content, prompt):
     model = genai.GenerativeModel("gemini-1.5-flash")
-    response = model.generate_content([content , prompt])
+    response = model.generate_content([content, prompt])
     return response.text
 
-
+# PDF processing
 def input_pdf_setup(uploaded_file):
-    reader=pdf.PdfReader(uploaded_file)
-    text=""
+    reader = pdf.PdfReader(uploaded_file)
+    text = ""
     for page in range(len(reader.pages)):
         page = reader.pages[page]
-        text+=str(page.extract_text())
+        text += str(page.extract_text())
     return text
 
+# Prompt for medical analysis
+prompt1 = """You are a world-class medical expert specializing in hematology, internal medicine, and general health diagnostics. Your role is to act as a professional doctor, analyzing and interpreting blood test reports with precision, empathy, and clarity. Your responses should provide a comprehensive, patient-centric interpretation of the blood report while ensuring the information is accurate, actionable, and understandable."""
 
+prompt2 = """You are a highly knowledgeable and professional doctor specializing in medical diagnostics and patient care. Your role is to analyze blood test reports, identify alarming or abnormal parameters, and present the findings in a clear, organized manner. Additionally, provide first-hand remedies and general advice for improving the flagged parameters."""
 
-prompt1="""
-You are a world-class medical expert specializing in hematology, internal medicine, and general health 
-diagnostics. Your role is to act as a professional doctor, analyzing and interpreting blood test reports 
-with precision, empathy, and clarity. Your responses should provide a comprehensive, patient-centric 
-interpretation of the blood report while ensuring the information is accurate, actionable, and 
-understandable.
-If any file other than the medical report is given as input then just say wrong file uploaded please upload
-the correct file
-"""
+prompt3_temp = """show summary of alarming factors which can be easy to read, just a small paragraph that highlights the alarming factors in blood report"""
 
-prompt2="""
-You are a highly knowledgeable and professional doctor specializing in medical diagnostics and patient care.
-Your role is to analyze blood test reports, identify alarming or abnormal parameters, and present the
-findings in a clear, organized manner. Additionally, provide first-hand remedies and general advice 
-for improving the flagged parameters.
-Just show the summary in tabular format so the patient easily understand the alarming factors in the 
-report .
-Aprat from table
-At the end show summary of alarming factors.which can be easy to read , just a small paragraph that highlights
-the alarming factors in blood report
-"""
+prompt3 = """Name top 5 best doctors along with hospital names in {city} based on other patients reviews, qualifications, experience, or similar symptoms using the context and city. Make sure you only recommend the doctors that are relevant to the patient's alarming symptoms mentioned in the context: {context}"""
 
-prompt3_temp="""
-show summary of alarming factors.which can be easy to read , just a small paragraph that highlights
-the alarming factors in blood report
-"""
-
-prompt3="""
-Name top 5 best doctors along with hospital names in {city}
-based on  other patients reviews, qualifications, experience ho suffered similar symptoms using the 
-context and city   , 
-Make sure u only recommend the doctors that are relevant to the patients alaraaming symptoms 
-mentioned in the context : 
-{context}
-Suggest the doctors in list format , so that they are easy to read
-Make sure the response is personalized for the user , mention every doctor along with the hospital , 
-Evrything in form of list Be a little descrptive , keep everything neat and tidy 
-"""
-
-def call_agent(context , city):
-    search=GoogleSerperAPIWrapper()
-    tools=[
+def call_agent(context, city):
+    search = GoogleSerperAPIWrapper()
+    tools = [
         Tool(
-            name = 'Intermediate Answer',
+            name='Intermediate Answer',
             func=search.run,
             description="useful for when you need to ask with search",
         )
     ]
-
-
-    self_ask_agent=initialize_agent(
-        tools , 
-        llm , 
-        agent="zero-shot-react-description" , 
+    self_ask_agent = initialize_agent(
+        tools,
+        llm,
+        agent="zero-shot-react-description",
         handle_parsing_errors=True
     )
-    
-    final_prompt=prompt3.format(context=context , city=city)
-
-    result=self_ask_agent.run(final_prompt)
-    
+    final_prompt = prompt3.format(context=context, city=city)
+    result = self_ask_agent.run(final_prompt)
     return result
-    
-uploaded_file=st.file_uploader("Upload your blood report" , type="pdf")
+
+uploaded_file = st.file_uploader("Upload your blood report", type="pdf")
 
 if uploaded_file is not None:
     st.success("PDF uploaded successfully")
 
-submit1=st.button("How is my report?")
+# Interaction buttons
+submit1 = st.button("How is my report?")
+submit2 = st.button("Show me summary")
+submit3 = st.button("Suggest some good doctors")
 
-submit2=st.button("Show me summary")
-
-submit3=st.button("Suggest some good doctors")
-
-st.subheader("Response : ")
+st.subheader("Response :")
 if submit1:
-    text=input_pdf_setup(uploaded_file)
-    response=get_response(text , prompt1)
-    st.write(response)
-
-
+    with st.spinner("Analyzing the report..."):
+        text = input_pdf_setup(uploaded_file)
+        response = get_response(text, prompt1)
+        st.write(response)
 elif submit2:
-    text=input_pdf_setup(uploaded_file)
-    response=get_response(text , prompt2)
-    st.write(response)
-
+    with st.spinner("Summarizing the report..."):
+        text = input_pdf_setup(uploaded_file)
+        response = get_response(text, prompt2)
+        st.write(response)
 elif submit3:
-    text=input_pdf_setup(uploaded_file)
-    response=get_response(text , prompt3_temp)
-    result=call_agent(response , city)
-    st.write(result)
-    
-    
+    with st.spinner("Fetching doctors..."):
+        text = input_pdf_setup(uploaded_file)
+        response = get_response(text, prompt3_temp)
+        result = call_agent(response, city)
+        st.write(result)
+
+# Footer section with custom styles
 st.markdown(
     """
     <style>
@@ -158,25 +112,38 @@ st.markdown(
             bottom: 0;
             left: 0;
             width: 100%;
-            background-color: black;
+            background-color: #2c3e50;
             color: white;
             text-align: center;
-            padding: 10px 0;
-            font-size: 14px;
+            padding: 15px 0;
+            font-size: 16px;
             z-index: 100;
+            font-family: 'Arial', sans-serif;
         }
         .footer a {
             color: white;
             text-decoration: none;
         }
         .footer img {
-            width: 30px;
+            width: 25px;
             vertical-align: middle;
             margin-left: 10px;
         }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
     </style>
     <div class="footer">
-        <strong>CopyRight © 2025 Mohit Raje</strong>
+        <strong>Copyright © 2025 Mohit Raje</strong>
         <a href="https://github.com/Mohit-Raje" target="_blank">
             <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub">
         </a>
@@ -184,7 +151,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-    
-    
-
-    
