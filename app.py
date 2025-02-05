@@ -5,7 +5,6 @@ import google.generativeai as genai
 import os
 from langchain_groq import ChatGroq
 import warnings
-from langchain_groq import ChatGroq
 from langchain.agents import AgentType, initialize_agent
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_core.tools import Tool
@@ -18,11 +17,11 @@ st.title("DocuMed AI 🩺🔬 — Your AI-Powered Medical Report Analyzer")
 
 ## Sidebar configuration
 st.sidebar.title("Enter API Keys 🔑")
-api_key = st.sidebar.text_input("Enter the GPT-4 API Key", type="password")  # Ganti jadi GPT-4 API Key
+api_key = st.sidebar.text_input("Enter the GPT-4 API Key", type="password")
 genai.configure(api_key=api_key)
-os.environ['GPT4_API_KEY'] = api_key  # API Key untuk GPT-4
+os.environ['GPT4_API_KEY'] = api_key
 
-claude_api_key = st.sidebar.text_input("Enter the Claude API Key", type="password")  # Claude API Key
+claude_api_key = st.sidebar.text_input("Enter the Claude API Key", type="password")
 os.environ["CLAUDE_API_KEY"] = claude_api_key
 
 serper_api_key = st.sidebar.text_input("Enter the Serper API Key", type="password")
@@ -66,6 +65,7 @@ def call_agent(context, city):
             description="useful for when you need to ask with search",
         )
     ]
+    llm = genai.GenerativeModel("gpt-4-turbo")  # Gunakan GPT-4 Turbo atau Claude
     self_ask_agent = initialize_agent(
         tools,
         llm,
@@ -129,18 +129,6 @@ st.markdown(
             width: 25px;
             vertical-align: middle;
             margin-left: 10px;
-        }
-        .button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            border: none;
-        }
-        .button:hover {
-            background-color: #45a049;
         }
     </style>
     <div class="footer">
