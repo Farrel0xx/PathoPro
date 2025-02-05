@@ -1,10 +1,9 @@
-langchain
-google-generativeai
 PyPDF2
-langchain_community
-pypdf
 streamlit
-langchain-groq
+openai
+langchain
+langchain_community
+langchain_groq
 langchain-exa
-exa-py
+exa_py
 tiktoken
