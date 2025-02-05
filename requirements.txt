@@ -2,7 +2,7 @@ streamlit
 langchain
 google-generativeai
 langchain_community
-pypdf
+PyPDF2
 langchain_groq
 langchain-exa
 exa_py
