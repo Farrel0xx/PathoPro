@@ -1,12 +1,14 @@
 import PyPDF2 as pdf
 from langchain_community.document_loaders import PyPDFLoader
 import streamlit as st
+import openai  # Menggunakan OpenAI API untuk GPT-4
 import os
 from langchain.agents import AgentType, initialize_agent
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_core.tools import Tool
-import openai
 
+# Menghindari peringatan yang tidak perlu
+import warnings
 warnings.filterwarnings("ignore")
 
 ## webpage configure 
@@ -15,8 +17,8 @@ st.title("DocuMed AI 🩺🔬 — Your AI-Powered Medical Report Analyzer")
 
 ## Sidebar configuration
 st.sidebar.title("Enter API Keys 🔑")
-openai_api_key = st.sidebar.text_input("Enter the OpenAI API Key", type="password")
-openai.api_key = openai_api_key
+api_key = st.sidebar.text_input("Enter the GPT-4 API Key", type="password")
+openai.api_key = api_key  # Gunakan OpenAI API Key
 
 claude_api_key = st.sidebar.text_input("Enter the Claude API Key", type="password")
 os.environ["CLAUDE_API_KEY"] = claude_api_key
@@ -30,15 +32,14 @@ city = st.sidebar.selectbox("Select the city", ("Mumbai", "Pune", "Banglore"))
 def get_response(content, prompt, model_type="gpt4"):
     if model_type == "gpt4":
         response = openai.Completion.create(
-            model="gpt-4",
-            prompt=prompt + "\n\n" + content,
-            max_tokens=1500
+            engine="gpt-4",  # Gunakan GPT-4
+            prompt=content + "\n" + prompt,
+            max_tokens=500
         )
-        return response.choices[0].text.strip()
     elif model_type == "claude":
-        # Call Claude API here (implementation may vary)
-        pass  # Implement this if you have access to Claude API
-    return "No response from selected model."
+        # Implementasi untuk Claude API jika diperlukan
+        pass
+    return response.choices[0].text.strip()
 
 # PDF processing
 def input_pdf_setup(uploaded_file):
@@ -67,7 +68,7 @@ def call_agent(context, city):
             description="useful for when you need to ask with search",
         )
     ]
-    llm = openai.Completion.create(model="gpt-4", prompt=context)
+    llm = openai  # Gunakan OpenAI untuk pemrosesan lanjutan
     self_ask_agent = initialize_agent(
         tools,
         llm,
