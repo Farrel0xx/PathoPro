@@ -1,9 +1,10 @@
-PyPDF2
 streamlit
-openai
 langchain
+google-generativeai
 langchain_community
+pypdf
 langchain_groq
 langchain-exa
 exa_py
 tiktoken
+openai==1.0.0
