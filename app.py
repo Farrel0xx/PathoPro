@@ -1,13 +1,11 @@
 import PyPDF2 as pdf
 from langchain_community.document_loaders import PyPDFLoader
 import streamlit as st
-import google.generativeai as genai
 import os
-from langchain_groq import ChatGroq
-import warnings
 from langchain.agents import AgentType, initialize_agent
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_core.tools import Tool
+import openai
 
 warnings.filterwarnings("ignore")
 
@@ -17,9 +15,8 @@ st.title("DocuMed AI 🩺🔬 — Your AI-Powered Medical Report Analyzer")
 
 ## Sidebar configuration
 st.sidebar.title("Enter API Keys 🔑")
-api_key = st.sidebar.text_input("Enter the GPT-4 API Key", type="password")
-genai.configure(api_key=api_key)
-os.environ['GPT4_API_KEY'] = api_key
+openai_api_key = st.sidebar.text_input("Enter the OpenAI API Key", type="password")
+openai.api_key = openai_api_key
 
 claude_api_key = st.sidebar.text_input("Enter the Claude API Key", type="password")
 os.environ["CLAUDE_API_KEY"] = claude_api_key
@@ -32,11 +29,16 @@ city = st.sidebar.selectbox("Select the city", ("Mumbai", "Pune", "Banglore"))
 # Response function
 def get_response(content, prompt, model_type="gpt4"):
     if model_type == "gpt4":
-        model = genai.GenerativeModel("gpt-4-turbo")  # Gunakan GPT-4 Turbo
+        response = openai.Completion.create(
+            model="gpt-4",
+            prompt=prompt + "\n\n" + content,
+            max_tokens=1500
+        )
+        return response.choices[0].text.strip()
     elif model_type == "claude":
-        model = genai.GenerativeModel("claude-3")  # Gunakan Claude 3
-    response = model.generate_content([content, prompt])
-    return response.text
+        # Call Claude API here (implementation may vary)
+        pass  # Implement this if you have access to Claude API
+    return "No response from selected model."
 
 # PDF processing
 def input_pdf_setup(uploaded_file):
@@ -65,7 +67,7 @@ def call_agent(context, city):
             description="useful for when you need to ask with search",
         )
     ]
-    llm = genai.GenerativeModel("gpt-4-turbo")  # Gunakan GPT-4 Turbo atau Claude
+    llm = openai.Completion.create(model="gpt-4", prompt=context)
     self_ask_agent = initialize_agent(
         tools,
         llm,
@@ -95,7 +97,7 @@ if submit1:
 elif submit2:
     with st.spinner("Summarizing the report..."):
         text = input_pdf_setup(uploaded_file)
-        response = get_response(text, prompt2, model_type="claude")  # Pilih model Claude
+        response = get_response(text, prompt2, model_type="gpt4")  # Pilih model GPT-4
         st.write(response)
 elif submit3:
     with st.spinner("Fetching doctors..."):
