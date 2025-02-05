@@ -31,15 +31,18 @@ city = st.sidebar.selectbox("Select the city", ("Mumbai", "Pune", "Banglore"))
 # Response function
 def get_response(content, prompt, model_type="gpt4"):
     if model_type == "gpt4":
-        response = openai.Completion.create(
-            engine="gpt-4",  # Gunakan GPT-4
-            prompt=content + "\n" + prompt,
-            max_tokens=500
+        response = openai.ChatCompletion.create(
+            model="gpt-4-turbo",  # Gunakan GPT-4 Turbo
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": content},
+                {"role": "user", "content": prompt}
+            ]
         )
     elif model_type == "claude":
         # Implementasi untuk Claude API jika diperlukan
         pass
-    return response.choices[0].text.strip()
+    return response['choices'][0]['message']['content']
 
 # PDF processing
 def input_pdf_setup(uploaded_file):
