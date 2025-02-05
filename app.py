@@ -10,7 +10,6 @@ from langchain.agents import AgentType, initialize_agent
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_core.tools import Tool
 
-
 warnings.filterwarnings("ignore")
 
 ## webpage configure 
@@ -19,13 +18,12 @@ st.title("DocuMed AI 🩺🔬 — Your AI-Powered Medical Report Analyzer")
 
 ## Sidebar configuration
 st.sidebar.title("Enter API Keys 🔑")
-api_key = st.sidebar.text_input("Enter the Gemini API Key", type="password")
+api_key = st.sidebar.text_input("Enter the GPT-4 API Key", type="password")  # Ganti jadi GPT-4 API Key
 genai.configure(api_key=api_key)
-os.environ['GOOGLE_API_KEY'] = api_key
+os.environ['GPT4_API_KEY'] = api_key  # API Key untuk GPT-4
 
-groq_api_key = st.sidebar.text_input("Enter the Groq API Key", type="password")
-os.environ["GROQ_API_KEY"] = groq_api_key
-llm = ChatGroq(groq_api_key=groq_api_key, model="llama-3.2-1b-preview")
+claude_api_key = st.sidebar.text_input("Enter the Claude API Key", type="password")  # Claude API Key
+os.environ["CLAUDE_API_KEY"] = claude_api_key
 
 serper_api_key = st.sidebar.text_input("Enter the Serper API Key", type="password")
 os.environ["SERPER_API_KEY"] = serper_api_key
@@ -33,8 +31,11 @@ os.environ["SERPER_API_KEY"] = serper_api_key
 city = st.sidebar.selectbox("Select the city", ("Mumbai", "Pune", "Banglore"))
 
 # Response function
-def get_response(content, prompt):
-    model = genai.GenerativeModel("gemini-1.5-flash")
+def get_response(content, prompt, model_type="gpt4"):
+    if model_type == "gpt4":
+        model = genai.GenerativeModel("gpt-4-turbo")  # Gunakan GPT-4 Turbo
+    elif model_type == "claude":
+        model = genai.GenerativeModel("claude-3")  # Gunakan Claude 3
     response = model.generate_content([content, prompt])
     return response.text
 
@@ -89,17 +90,17 @@ st.subheader("Response :")
 if submit1:
     with st.spinner("Analyzing the report..."):
         text = input_pdf_setup(uploaded_file)
-        response = get_response(text, prompt1)
+        response = get_response(text, prompt1, model_type="gpt4")  # Pilih model GPT-4
         st.write(response)
 elif submit2:
     with st.spinner("Summarizing the report..."):
         text = input_pdf_setup(uploaded_file)
-        response = get_response(text, prompt2)
+        response = get_response(text, prompt2, model_type="claude")  # Pilih model Claude
         st.write(response)
 elif submit3:
     with st.spinner("Fetching doctors..."):
         text = input_pdf_setup(uploaded_file)
-        response = get_response(text, prompt3_temp)
+        response = get_response(text, prompt3_temp, model_type="gpt4")  # Pilih model GPT-4 untuk dokter
         result = call_agent(response, city)
         st.write(result)
 
