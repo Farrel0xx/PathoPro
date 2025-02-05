@@ -4,7 +4,7 @@ PyPDF2
 langchain_community
 pypdf
 streamlit
-langchain_groq
-langchain-exa 
-exa_py
+langchain-groq
+langchain-exa
+exa-py
 tiktoken
